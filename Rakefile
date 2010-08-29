@@ -6,11 +6,12 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "right_data"
     gem.summary = %Q{RightData helpers}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.description = %Q{RightData helpers}
     gem.email = "usiegj00@gmail.com"
     gem.homepage = "http://github.com/usiegj00/right_data"
     gem.authors = ["Jonathan Siegel"]
     gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
+    gem.files = FileList["{lib}/*"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
