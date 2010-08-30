@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'FileSystemItem'
+require 'escape'
 # require 'unicode'
 
 $KCODE = 'UTF-8'   # only used when encoding is not specified.
@@ -104,7 +105,7 @@ module RightData
     count = 0
     Find.find(*paths) { |f| 
     sizes[File.size(f)] << f if File.file?(f) && !ignore_test(f)
-    count += 1
+      count += 1
     }
     puts "# Indexed #{count} files."
     sizes
@@ -187,6 +188,16 @@ module RightData
     master = "/Users/jonathan/Dropbox"
     prune  = "/Users/jonathan/Desktop/Old"
     scan_for_prunable(master,prune) { |a,b| puts "#{b.size} : #{a}" }
+    # each_set_of_duplicates(prune) 
+  end
+
+  def self.scan_for_dup(prunable)
+    each_set_of_duplicates(prune) do |dups|
+      puts "# #{Escape.shell_command(dups.shift)}"
+      dups.each do |d|
+        puts Escape.shell_command(["rm","-rf",d," # dup"])
+      end
+    end
   end
 
   # tree = scan_for_prunable(master,prune) { |a,b| puts "#{b.size} : #{a}" }; nil
