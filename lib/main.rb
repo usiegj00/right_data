@@ -49,7 +49,9 @@ module RightData
   BLOCK_SIZE = 1024*8
   IGNORE_FILES = [".DS_Store", ".typeAttributes.dict", "empty-file"]
   def self.ignore_test(f)
-    IGNORE_FILES.include?(File.basename(f)) || (File.size(f) == 0) || # Ignore empty files
+    IGNORE_FILES.include?(File.basename(f)) || 
+      File.symlink?(f) || 
+      (File.size(f) == 0) || # Ignore empty files
       File.basename(f).downcase =~ /\.tmp$/ ||
       File.basename(f).downcase =~ /\.swp$/
   end
