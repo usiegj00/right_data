@@ -104,7 +104,7 @@ module RightData
     sizes[File.size(f)] << f if File.file?(f) && !ignore_test(f)
     count += 1
     }
-    puts "Indexed #{count} files."
+    puts "# Indexed #{count} files."
     sizes
   end
 
