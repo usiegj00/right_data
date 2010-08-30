@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'FileSystemItem'
+require 'FileSystemTree'
 require 'escape'
 # require 'unicode'
 
