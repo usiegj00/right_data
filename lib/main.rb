@@ -192,7 +192,7 @@ module RightData
   end
 
   def self.scan_for_dup(prunable)
-    each_set_of_duplicates(prune) do |dups|
+    each_set_of_duplicates(prunable) do |dups|
       puts "# #{Escape.shell_command(dups.shift)}"
       dups.each do |d|
         puts Escape.shell_command(["rm","-rf",d," # dup"])
