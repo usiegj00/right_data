@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{right_data}
-  s.version = "0.5.20"
+  s.version = "0.5.21"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jonathan Siegel"]
@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "lib/FileSystemItem.rb",
+     "lib/FileSystemTree.rb",
      "lib/main.rb",
      "lib/right_data.rb"
   ]
