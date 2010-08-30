@@ -47,6 +47,12 @@ require 'find'
 module RightData
 
   BLOCK_SIZE = 1024*8
+  IGNORE_FILES = [".DS_Store", ".typeAttributes.dict", "empty-file"]
+  def self.ignore_test(f)
+    IGNORE_FILES.include?(File.basename(f)) || (File.size(f) == 0) || # Ignore empty files
+      File.basename(f).downcase =~ /\.tmp$/ ||
+      File.basename(f).downcase =~ /\.swp$/
+  end
 
   def self.each_set_of_duplicates(*paths, &block)
     sizes = Hash.new {|h, k| h[k] = [] }
@@ -91,13 +97,11 @@ module RightData
    return possible_duplicates
   end
 
-  IGNORE_FILES = [".DS_Store", ".typeAttributes.dict", "empty-file"]
-
   def self.index_by_size(*paths)
     sizes = Hash.new {|h, k| h[k] = [] }
     count = 0
     Find.find(*paths) { |f| 
-    sizes[File.size(f)] << f if File.file?(f) && !IGNORE_FILES.include?(File.basename(f)) && (File.size(f) != 0) # Ignore empty files
+    sizes[File.size(f)] << f if File.file?(f) && !ignore_test(f)
     count += 1
     }
     puts "Indexed #{count} files."
@@ -207,7 +211,7 @@ module RightData
     tree.traverse do |n|
       next true if File.directory?(n.path)
       count += 1
-      if IGNORE_FILES.include?(n.basename)
+      if ignore_test(n.path)
         n.ignorable = true
         n.parent.increment_ignorable_children
       else
