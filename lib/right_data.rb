@@ -8,7 +8,7 @@ module RightData
   end
 
   def self.dup_report(prunable)
-    RightData::scan_for_dup(prune)
+    RightData::scan_for_dup(prunable)
   end
 end
 # Usage:
