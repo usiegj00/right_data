@@ -315,6 +315,9 @@ module RightData
         !repos[n.path] # recurse only if we DID NOT find a repo
       end
     end
+    repos.keys.sort.each do |k|
+      puts "Found #{repos[k][:kind]} repo at: #{k}. \n\tStatus: #{repos[k][:status]}"
+    end
     return repos
   end
 
