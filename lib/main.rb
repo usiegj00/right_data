@@ -127,7 +127,7 @@ module RightData
   def self.cache_serializing_on_write(master)
     master_cache = File.join(master,".rightPruneCache")
     if File.exist?(master_cache)
-      puts "Master cache FOUND at #{master_cache}."
+      puts "# Master cache FOUND at #{master_cache}."
       master_index = File.open(master_cache) do |f| 
         rval = {}
         f.each_line do |l|
@@ -137,16 +137,16 @@ module RightData
         rval
       end
     else
-      puts "Master cache not found at #{master_cache}."
+      puts "# Master cache not found at #{master_cache}."
       master_index = index_by_size(master)
-      puts "Writing #{master_cache}."
+      puts "# Writing #{master_cache}."
       File.open(master_cache, "w") do |f| 
         master_index.each_pair do |k,v|
           Marshal.dump([k,v], f)
         end
         # f.write(master_index.inspect)
       end  
-      puts "Wrote #{master_cache}."
+      puts "# Wrote #{master_cache}."
     end
   end
 
@@ -185,11 +185,11 @@ module RightData
 
   # tree = scan_for_prunable(master,prune) { |a,b| puts "#{b.size} : #{a}" }; nil
   def self.scan_for_prunable(master,prune, &block)
-    puts "Ignoring: #{IGNORE_FILES.inspect}"
+    puts "# Ignoring: #{IGNORE_FILES.inspect}"
 
     master_index = cache_not_working_on_write(master)
     # master_index = index_by_size(master)
-    puts "Found #{master_index.size} unique sizes."
+    puts "# Found #{master_index.size} unique sizes."
 
     # dups = check_file_in_index(master_index, "/Users/jonathan/Dropbox/2261093437_fac9fa9008_b.jpg")
 
@@ -220,7 +220,7 @@ module RightData
       end
       true
     end
-    puts "We counted #{count} files. Tree thinks it has #{tree.files}."
+    puts "# We counted #{count} files. Tree thinks it has #{tree.files}."
     return tree
 
     if nil
