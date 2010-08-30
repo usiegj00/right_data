@@ -107,18 +107,18 @@ module RightData
   def self.cache_not_working_on_write(master)
     master_cache = File.join(master,".rightPruneCache")
     if File.exist?(master_cache)
-      puts "Master cache FOUND at #{master_cache}."
+      puts "# Master cache FOUND at #{master_cache}."
       master_index = File.open(master_cache) do |f| 
         YAML::load(f)
       end
     else
-      puts "Master cache not found at #{master_cache}."
+      puts "# Master cache not found at #{master_cache}."
       master_index = index_by_size(master)
-      puts "Writing #{master_cache}."
+      puts "# Writing #{master_cache}."
       File.open(master_cache, "w") do |f| 
         YAML.dump(master_index, f)
       end  
-      puts "Wrote #{master_cache}."
+      puts "# Wrote #{master_cache}."
     end
     master_index
   end
