@@ -11,6 +11,7 @@ begin
     gem.homepage = "http://github.com/usiegj00/right_data"
     gem.authors = ["Jonathan Siegel"]
     gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
+    gem.add_development_dependency "escape", ">= 0"
     gem.files = FileList["{lib}/*"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end

@@ -1,3 +1,4 @@
+require 'escape'
 module RightData
   class FileSystemItem
     
@@ -118,6 +119,14 @@ module RightData
       "<Tree :path => #{self.path}, :files => #{self.files}>" 
     end
 
+    def put_for_shell(pre,path,comment)
+      if(pre.empty?)
+        puts Escape.shell_escape([path, "# #{comment}"])
+      else
+        puts Escape.shell_escape(pre.split(" ").append(path).append("# #{comment}"))
+      end
+    end
+
     # Inspect the nodes:
     def report(pre="")
       pre += " " if !pre.empty?
@@ -126,13 +135,15 @@ module RightData
         if n.leaf?
           if(File.directory?(n.path))
             # Prune empty dirs!
-            puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # Empty dir" # Remove the dups/igns!
+            put_for_shell(pre,n.path,"Empty dir") # Remove the dups/igns!
+            #puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # Empty dir"
           else 
             msg = nil
-            msg = "# dup(#{n.duplicates.count})" if n.duplicate?
-            msg = "# ign" if n.ignorable?
+            msg = " dup(#{n.duplicates.count})" if n.duplicate?
+            msg = " ign" if n.ignorable?
             if msg
-              puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' #{msg}" # Remove the dups/igns!
+              put_for_shell(pre,n.path,msg) # Remove the dups/igns!
+              # puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' #{msg}" # Remove the dups/igns!
             else
               puts "# #{n.path} unique"
             end
@@ -140,10 +151,12 @@ module RightData
           false # Don't traverse deeper!
         else
           if n.duplicate_children + n.ignore_children == n.children.size
-            puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # #{n.duplicate_children} dups / #{n.ignore_children} ignores"
+            put_for_shell(pre,n.path,"#{n.duplicate_children} dups / #{n.ignore_children} ignores")
+            # puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # #{n.duplicate_children} dups / #{n.ignore_children} ignores"
             false # Don't traverse deeper!
           elsif n.children.size == 0
-            puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # Empty... "
+            put_for_shell(pre,n.path," Empty")
+            # puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # Empty... "
             false
           else
             puts "# #{n.path} # Not #{n.duplicate_children} dup/ #{n.ignore_children} ign / #{n.other_children} other "
