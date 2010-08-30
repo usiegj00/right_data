@@ -209,7 +209,17 @@ module RightData
     tree = FileSystemItem.new(prune, :parent => nil)
     # Mark the nodes:
     tree.traverse do |n|
-      next true if File.directory?(n.path)
+      # Could keep track of empty dirs too...
+      if File.directory?(n.path)
+        # If empty dir...
+        if n.leaf?
+          n.ignorable = true
+          n.parent.increment_ignorable_children
+          next false # Don't bother, no kids
+        else
+          next true
+        end
+      end
       count += 1
       if ignore_test(n.path)
         n.ignorable = true

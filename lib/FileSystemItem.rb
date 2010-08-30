@@ -25,6 +25,7 @@ module RightData
       self
     end
 
+    # TODO: Do this for LEAVES instead of files. Include empty dirs.
     def files
       return 0 if leaf? && File.directory?(fullPath)
       return 1 if leaf?
