@@ -121,9 +121,9 @@ module RightData
 
     def put_for_shell(pre,path,comment)
       if(pre.empty?)
-        puts Escape.shell_escape([path, "# #{comment}"])
+        puts Escape.shell_command([path, "# #{comment}"])
       else
-        puts Escape.shell_escape([pre.split(" "), path, "# #{comment}"].flatten)
+        puts Escape.shell_command([pre.split(" "), path, "# #{comment}"].flatten)
       end
     end
 
