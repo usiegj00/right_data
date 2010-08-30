@@ -2,7 +2,7 @@ require 'main'
 
 module RightData
   def self.hello; "Hi!"; end
-  def prune_report(master,prunable)
+  def self.prune_report(master,prunable)
     tree = RightData::scan_for_prunable(master,prunable) 
     tree.report('rm -rf'); nil
   end
