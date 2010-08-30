@@ -288,10 +288,10 @@ module RightData
   end
 
   # This is a weak check! Also does nothing to check one svn in another.
-  def svn?(path)
+  def self.svn?(path)
     File.directory?(File.join(path, ".svn"))
   end
-  def git?(path)
+  def self.git?(path)
     File.directory?(File.join(path, ".git"))
   end
   def self.scan_for_repos(prune, &block)
