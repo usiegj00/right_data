@@ -286,6 +286,37 @@ module RightData
     # prunable_files
   end
 
+  # This is a weak check! Also does nothing to check one svn in another.
+  def svn?(path)
+    File.directory?(File.join(path, ".svn"))
+  end
+  def git?(path)
+    File.directory?(File.join(path, ".git"))
+  end
+  def self.scan_for_repos(prune, &block)
+    tree = FileSystemTree.new(prune, :parent => nil)
+    repos = {}
+    # Mark the nodes:
+    tree.traverse do |n|
+      if File.directory?(n.path)
+        if svn?(n.path)
+          cd_cmd = Escape.shell_command(["cd",n.path])
+          status = `#{cd_cmd}; svn status`
+          info   = `#{cd_cmd}; svn info`
+          repos[n.path] = { :kind => "svn", :status => status, :info => info }
+        end
+        if git?(n.path)
+          cd_cmd = Escape.shell_command(["cd",n.path])
+          status = `#{cd_cmd}; git status`
+          info   = `#{cd_cmd}; git show`
+          repos[n.path] = { :kind => "git", :status => status, :info => info }
+        end
+        !repos[n.path] # recurse only if we DID NOT find a repo
+      end
+    end
+    return repos
+  end
+
   # each_set_of_duplicates(dirs) do |f|
   #  puts "Duplicates: #{f.join(", ")}"
   #end
