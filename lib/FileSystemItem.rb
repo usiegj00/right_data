@@ -126,13 +126,13 @@ module RightData
         if n.leaf?
           if(File.directory?(n.path))
             # Prune empty dirs!
-            puts "#{pre}'#{n.path.gsub(/'/,"\\'")}' # Empty dir" # Remove the dups/igns!
+            puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # Empty dir" # Remove the dups/igns!
           else 
             msg = nil
             msg = "# dup(#{n.duplicates.count})" if n.duplicate?
             msg = "# ign" if n.ignorable?
             if msg
-              puts "#{pre}'#{n.path.gsub(/'/,"\\'")}' #{msg}" # Remove the dups/igns!
+              puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' #{msg}" # Remove the dups/igns!
             else
               puts "# #{n.path} unique"
             end
@@ -140,10 +140,10 @@ module RightData
           false # Don't traverse deeper!
         else
           if n.duplicate_children + n.ignore_children == n.children.size
-            puts "#{pre}'#{n.path.gsub(/'/,"\\'")}' # #{n.duplicate_children} dups / #{n.ignore_children} ignores"
+            puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # #{n.duplicate_children} dups / #{n.ignore_children} ignores"
             false # Don't traverse deeper!
           elsif n.children.size == 0
-            puts "#{pre}'#{n.path.gsub(/'/,"\\'")}' # Empty... "
+            puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # Empty... "
             false
           else
             puts "# #{n.path} # Not #{n.duplicate_children} dup/ #{n.ignore_children} ign / #{n.other_children} other "
