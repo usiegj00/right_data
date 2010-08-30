@@ -124,13 +124,18 @@ module RightData
       self.traverse do |n|
         # Is this a leaf (e.g. a file)?
         if n.leaf?
-          msg = nil
-          msg = "# dup(#{n.duplicates.count})" if n.duplicate?
-          msg = "# ign" if n.ignorable?
-          if msg
-            puts "#{pre}'#{n.path.gsub(/'/,"\\'")}' #{msg}" # Remove the dups/igns!
-          else
-            puts "# #{n.path} unique"
+          if(File.directory?(n.path))
+            # Prune empty dirs!
+            puts "#{pre}'#{n.path.gsub(/'/,"\\'")}' # Empty dir" # Remove the dups/igns!
+          else 
+            msg = nil
+            msg = "# dup(#{n.duplicates.count})" if n.duplicate?
+            msg = "# ign" if n.ignorable?
+            if msg
+              puts "#{pre}'#{n.path.gsub(/'/,"\\'")}' #{msg}" # Remove the dups/igns!
+            else
+              puts "# #{n.path} unique"
+            end
           end
           false # Don't traverse deeper!
         else
