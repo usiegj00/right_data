@@ -16,6 +16,13 @@ rake version:bump:minor
 rake build
 gem install pkg/...
 
+git commit -am "typo"
+rake version:bump:patch release
+sudo gem install pkg/right_data-0.5.4.gem
+
+echo "gem 'right_data'; require 'right_data'; RightData::prune_report('/Users/jonathan/Dropbox','/Users/jonathan/Desktop/Old')" | ruby -rrubygems
+
+
 == Copyright
 
 Copyright (c) 2010 Jonathan Siegel. See LICENSE for details.
