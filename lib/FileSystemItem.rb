@@ -123,7 +123,7 @@ module RightData
       if(pre.empty?)
         puts Escape.shell_escape([path, "# #{comment}"])
       else
-        puts Escape.shell_escape(pre.split(" ").append(path).append("# #{comment}"))
+        puts Escape.shell_escape([pre.split(" "), path, "# #{comment}"].flatten)
       end
     end
 
