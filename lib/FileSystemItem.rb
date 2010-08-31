@@ -95,7 +95,11 @@ module RightData
     end
 
     def update_duplicate_ignorable_status
-      parent.increment_duplicate_children if((@ignore_children + @duplicate_children) == numberOfChildren)
+      if parent.nil?
+        puts "# PARENT IS NIL TRYING TO update_duplicate_ignorable_status @ #{self.path}"
+      else
+        parent.increment_duplicate_children if((@ignore_children + @duplicate_children) == numberOfChildren)
+      end
     end
 
     def increment_duplicate_children
