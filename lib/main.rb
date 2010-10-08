@@ -6,44 +6,6 @@ require 'escape'
 
 $KCODE = 'UTF-8'   # only used when encoding is not specified.
 
-# crawler = Index.new
-# crawler.crawl
-
-=begin
-  #!/usr/bin/ruby
-  # find_duplicates.rb
-  
-  require 'find'
-  require 'digest/md5'
-
-  def each_set_of_duplicates(*paths)
-    sizes = {}
-    Find.find(*paths) do |f|
-     (sizes[File.size(f)] ||= []) << f if File.file? f
-    end
-    sizes.each do |size, files|
-      next unless files.size > 1
-      md5s = {}
-      files.each do |f|
-        digest = Digest::MD5.hexdigest(File.read(f))
-        (md5s[digest] ||= []) << f
-      end
-      md5s.each { |sum, files| yield files if files.size > 1 }
-    end
-  end
-
-  each_set_of_ 
-duplicates(*ARGV) do |f|
-    puts " 
-Duplicates: #{f.join(", ")}"
-  end
-=end
-
-# http://codeidol.com/other/rubyckbk/System-Administration/Finding-Duplicate-Files/
-
-#!/usr/bin/ruby
-# find_duplicates2.rb
-
 require 'find'
 
 module RightData
@@ -56,6 +18,21 @@ module RightData
       (File.size(f) == 0) || # Ignore empty files
       File.basename(f).downcase =~ /\.tmp$/ ||
       File.basename(f).downcase =~ /\.swp$/
+  end
+
+  # Is this a picture? If so, we'll be using imagemagick's compare feature later on
+  def self.is_visual_media?(f)
+    ext = File.basename(f).downcase.split(".").last 
+    ["jpg","jpeg","gif","bmp","png"].include?(ext)
+  end
+
+  def self.identical_images?(a,b)
+    return false unless self.is_visual_media?(a) && self.is_visual_media?(b)
+    # rmagick1.signature <=> rmagick2.signature
+    # rmagick1.compare_channel(rmagick2, MeanAbsoluteErrorMetric).last == 0
+    cmd = "compare -metric AE \"#{a.gsub(/\"/,'\"')}\" \"#{b.gsub(/\"/,'\"')}\" /dev/null"
+    puts "Executing comparison: #{cmd}"
+    "0" == `#{cmd}`
   end
 
   def self.each_set_of_duplicates(*paths, &block)
@@ -101,19 +78,29 @@ module RightData
    return possible_duplicates
   end
 
+  def self.index_by_name(*paths)
+    names = Hash.new {|h, k| h[k] = [] }
+    count = 0
+    Find.find(*paths) { |f| 
+      names[File.basename(f).downcase] << f if File.file?(f) && !ignore_test(f)
+      count += 1
+    }
+    puts "# Indexed #{count} files by name."
+    names
+  end
+
   def self.index_by_size(*paths)
     sizes = Hash.new {|h, k| h[k] = [] }
     count = 0
     Find.find(*paths) { |f| 
-    sizes[File.size(f)] << f if File.file?(f) && !ignore_test(f)
+      sizes[File.size(f)] << f if File.file?(f) && !ignore_test(f)
       count += 1
     }
-    puts "# Indexed #{count} files."
+    puts "# Indexed #{count} files by size."
     sizes
   end
 
-  def self.cache_not_working_on_write(master)
-    master_cache = File.join(master,".rightPruneCache")
+  def self.cache_not_working_on_write(master, master_cache, indexing_function)
     if File.exist?(master_cache)
       puts "# Master cache FOUND at #{master_cache}."
       master_index = File.open(master_cache) do |f| 
@@ -121,7 +108,7 @@ module RightData
       end
     else
       puts "# Master cache not found at #{master_cache}."
-      master_index = index_by_size(master)
+      master_index = indexing_function.call(master)
       puts "# Writing #{master_cache}."
       File.open(master_cache, "w") do |f| 
         YAML.dump(master_index, f)
@@ -164,7 +151,16 @@ module RightData
     end
   end
 
-  def self.check_file_in_index(master_index, file_to_check, &block)
+  def self.check_file_in_image_index(master_index, file_to_check)
+    size = File.size(file_to_check)
+    return [] if size == 0 # Ignore empty files
+    possible_master_dups = master_index[File.basename(file_to_check).downcase] || []
+    possible_master_dups.select { |master_file|
+      self.identical_images?(master_file,file_to_check)
+    }
+  end
+
+  def self.check_file_in_index(master_index, file_to_check)
     size = File.size(file_to_check)
     return [] if size == 0 # Ignore empty files
     possible_master_dups = master_index[size] || []
@@ -201,13 +197,27 @@ module RightData
     end
   end
 
+  def self.scan_for_prunable_images(master, prune, &block)
+    indexing_function    = Proc.new { |a| self.index_by_name(a) }
+    check_index_function = Proc.new { |a,b| self.check_file_in_image_index(a,b) }
+    self.scan_for_prunable_base(master, prune, indexing_function, check_index_function, "image", &block)
+  end
+
+  def self.scan_for_prunable(master, prune, &block)
+    indexing_function    = Proc.new { |a| self.index_by_size(a) }
+    check_index_function = Proc.new { |a,b| self.check_file_in_index(a,b) }
+    scan_for_prunable_base(master, prune, indexing_function, check_index_function, "size", &block)
+  end
+
   # tree = scan_for_prunable(master,prune) { |a,b| puts "#{b.size} : #{a}" }; nil
-  def self.scan_for_prunable(master,prune, &block)
+  def self.scan_for_prunable_base(master, prune, indexing_function, check_index_function, kind, &block)
     puts "# Ignoring: #{IGNORE_FILES.inspect}"
 
-    master_index = cache_not_working_on_write(master)
+    master_cache = File.join(master,".rightPruneCache-#{kind}")
+    master_index = cache_not_working_on_write(master, master_cache, indexing_function)
+
     # master_index = index_by_size(master)
-    puts "# Found #{master_index.size} unique sizes."
+    puts "# Found #{master_index.size} unique #{kind}s."
 
     # dups = check_file_in_index(master_index, "/Users/jonathan/Dropbox/2261093437_fac9fa9008_b.jpg")
 
@@ -240,7 +250,7 @@ module RightData
         n.parent.increment_ignorable_children
       else
         # puts n.path
-        duplicates = check_file_in_index(master_index, n.path)
+        duplicates = check_index_function.call(master_index, n.path)
         if(!duplicates.empty?) 
           n.duplicates = duplicates
           n.parent.increment_duplicate_children
@@ -330,3 +340,42 @@ module RightData
   # Found 37765 unique sizes.
   # After check. Found 1240 / 1940 dups in master.
 end
+
+# crawler = Index.new
+# crawler.crawl
+
+=begin
+  #!/usr/bin/ruby
+  # find_duplicates.rb
+  
+  require 'find'
+  require 'digest/md5'
+
+  def each_set_of_duplicates(*paths)
+    sizes = {}
+    Find.find(*paths) do |f|
+     (sizes[File.size(f)] ||= []) << f if File.file? f
+    end
+    sizes.each do |size, files|
+      next unless files.size > 1
+      md5s = {}
+      files.each do |f|
+        digest = Digest::MD5.hexdigest(File.read(f))
+        (md5s[digest] ||= []) << f
+      end
+      md5s.each { |sum, files| yield files if files.size > 1 }
+    end
+  end
+
+  each_set_of_ 
+duplicates(*ARGV) do |f|
+    puts " 
+Duplicates: #{f.join(", ")}"
+  end
+=end
+
+# http://codeidol.com/other/rubyckbk/System-Administration/Finding-Duplicate-Files/
+
+#!/usr/bin/ruby
+# find_duplicates2.rb
+

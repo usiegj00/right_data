@@ -10,6 +10,11 @@ module RightData
     tree.report('rm -rf'); nil
   end
 
+  def self.prune_image_report(master,prunable)
+    tree = RightData::scan_for_prunable_images(master,prunable) 
+    tree.report('rm -rf'); nil
+  end
+
   # Run this in a directory that is suspected of containing self-duplicate files.
   # Compare to: fdupes -r -n prunable
   def self.dup_report(prunable)
