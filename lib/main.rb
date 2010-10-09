@@ -30,9 +30,13 @@ module RightData
     return false unless self.is_visual_media?(a) && self.is_visual_media?(b)
     # rmagick1.signature <=> rmagick2.signature
     # rmagick1.compare_channel(rmagick2, MeanAbsoluteErrorMetric).last == 0
-    cmd = "compare -metric AE \"#{a.gsub(/\"/,'\"')}\" \"#{b.gsub(/\"/,'\"')}\" /dev/null"
+    cmd = "compare -metric AE \"#{a.gsub(/\"/,'\"')}\" \"#{b.gsub(/\"/,'\"')}\" /dev/null 2>&1"
     puts "Executing comparison: #{cmd}"
-    "0" == `#{cmd}`
+    # >> a = `compare -metric ae a.png b.png /dev/null 2>&1`
+    # => "0\n"
+    "0" == `#{cmd}`.chomp
+
+    # TODO Consider checking rotated 90,180,270 degrees and scaled to other image...
   end
 
   def self.each_set_of_duplicates(*paths, &block)
