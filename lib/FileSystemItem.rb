@@ -164,7 +164,7 @@ module RightData
             # puts "#{pre}'#{n.path.gsub(/'/,"\\\\'")}' # Empty... "
             false
           else
-            puts "# #{n.path} # Not #{n.duplicate_children} dup/ #{n.ignore_children} ign / #{n.other_children} other "
+            puts "# #{n.path} # Note: #{n.duplicate_children} dup/ #{n.ignore_children} ign / #{n.other_children} other "
             true
           end
         end

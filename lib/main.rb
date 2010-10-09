@@ -159,9 +159,8 @@ module RightData
     size = File.size(file_to_check)
     return [] if size == 0 # Ignore empty files
     possible_master_dups = master_index[File.basename(file_to_check).downcase] || []
-    possible_master_dups.select { |master_file|
-      self.identical_images?(master_file,file_to_check)
-    }
+    r = possible_master_dups.find { |master_file| self.identical_images?(master_file,file_to_check) }
+    r == nil ? [] : [r] # Original check API wanted an array
   end
 
   def self.check_file_in_index(master_index, file_to_check)
@@ -170,14 +169,14 @@ module RightData
     possible_master_dups = master_index[size] || []
       offset = 0
       while !possible_master_dups.empty? && offset <= size
-      file_to_check_block = get_block(file_to_check, offset)
+        file_to_check_block = get_block(file_to_check, offset)
         new_possible_master_dups = []
-      possible_master_dups.each do |master|
-      block = get_block(master,offset)
-      if(block == file_to_check_block)
-        new_possible_master_dups << master
-      end
-      end
+        possible_master_dups.each do |master|
+          block = get_block(master,offset)
+          if(block == file_to_check_block)
+            new_possible_master_dups << master
+          end
+        end
         possible_master_dups = new_possible_master_dups
         offset += BLOCK_SIZE
       end
