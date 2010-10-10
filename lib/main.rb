@@ -231,7 +231,7 @@ module RightData
     # dups = check_file_in_index(master_index, "/Users/jonathan/Dropbox/2261093437_fac9fa9008_b.jpg")
 
     # Get prune count for progress updates:
-    prune_count = `cd "#{prune}"; ls -laR | wc -l`.chomp.to_i
+    prune_count = `find "#{prune}" | wc -l`.chomp.to_i
     prune_updates = (0..25).inject({}) { |a,i| a[(i * (prune_count / 25)).to_i]=true;a }
 
     count = 0
