@@ -30,11 +30,17 @@ module RightData
     return false unless self.is_visual_media?(a) && self.is_visual_media?(b)
     # rmagick1.signature <=> rmagick2.signature
     # rmagick1.compare_channel(rmagick2, MeanAbsoluteErrorMetric).last == 0
-    cmd = "compare -metric AE \"#{a.gsub(/\"/,'\"')}\" \"#{b.gsub(/\"/,'\"')}\" /dev/null 2>&1"
-    puts "Executing comparison: #{cmd}"
-    # >> a = `compare -metric ae a.png b.png /dev/null 2>&1`
-    # => "0\n"
-    "0" == `#{cmd}`.chomp
+
+    if true # Do fuzzy test:
+      cmd = "compare -metric AE -fuzz 5% -compose src \"#{a.gsub(/\"/,'\"')}\" \"#{b.gsub(/\"/,'\"')}\" /dev/null 2>&1"
+      `#{cmd}`.chomp.to_i < 1000
+    else
+      cmd = "compare -metric AE -compose src \"#{a.gsub(/\"/,'\"')}\" \"#{b.gsub(/\"/,'\"')}\" /dev/null 2>&1"
+      # puts "Executing comparison: #{cmd}"
+      # >> a = `compare -metric ae a.png b.png /dev/null 2>&1`
+      # => "0\n"
+      "0" == `#{cmd}`.chomp
+    end
 
     # TODO Consider checking rotated 90,180,270 degrees and scaled to other image...
   end
@@ -224,6 +230,10 @@ module RightData
 
     # dups = check_file_in_index(master_index, "/Users/jonathan/Dropbox/2261093437_fac9fa9008_b.jpg")
 
+    # Get prune count for progress updates:
+    prune_count = `cd #{prune}; ls -laR | wc -l`.chomp.to_i
+    prune_updates = (0..25).inject({}) { |a,i| a[(i * (prune_count / 25)).to_i]=true;a }
+
     count = 0
 
     # Recursively compare the files in the filesystem.
@@ -236,6 +246,7 @@ module RightData
     tree = FileSystemItem.new(prune, :parent => nil)
     # Mark the nodes:
     tree.traverse do |n|
+      puts "# [#{count} / #{prune_count}] #{((count/prune_count)*100).to_i}%" if prune_updates[count]
       # Could keep track of empty dirs too...
       if File.directory?(n.path)
         # If empty dir...
